@@ -1,0 +1,5 @@
+# vstore
+
+## License
+
+MIT
