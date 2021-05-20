@@ -34,6 +34,7 @@ func Route(r *gin.Engine) {
 		controllers.GetVideoStream(vid, c)
 	})
 	r.GET("/api/sources", controllers.ListSources)
+	r.POST("/api/videos", controllers.AddVideo)
 	r.GET("/auth/start", controllers.AuthStart)
 	r.GET("/auth/cb", controllers.AuthCallback)
 }

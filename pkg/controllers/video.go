@@ -40,3 +40,39 @@ func ListSources(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"res": res})
 	}
 }
+
+func AddVideo(c *gin.Context) {
+	var body struct {
+		Sid         int    `form:"sid"`
+		Title       string `form:"title"`
+		Description string `form:"description"`
+	}
+	errMsg := "Invalid data to create a video"
+	err := c.ShouldBind(&body)
+	if err != nil {
+		c.String(http.StatusBadRequest, errMsg)
+		return
+	}
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.String(http.StatusBadRequest, errMsg)
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		c.String(http.StatusBadRequest, errMsg)
+		return
+	}
+	v := dao.VideoAdd{
+		Sid:         body.Sid,
+		Title:       body.Title,
+		Description: body.Description,
+		File:        f,
+	}
+	err = v.Add()
+	if err != nil {
+		c.String(http.StatusBadRequest, errMsg)
+	} else {
+		c.JSON(http.StatusOK, gin.H{"res": v.Vid})
+	}
+}

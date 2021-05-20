@@ -61,3 +61,46 @@ func (v VideoStream) Close() error {
 	}
 	return nil
 }
+
+type VideoAdd struct {
+	Vid         int
+	Sid         int
+	Title       string
+	Description string
+	File        io.ReadCloser
+}
+
+func (v *VideoAdd) Add() error {
+	defer v.File.Close()
+	tx, err := GetConn().Begin(context.Background())
+	ok := false
+	defer func() {
+		if ok {
+			_ = tx.Commit(context.Background())
+		} else {
+			_ = tx.Rollback(context.Background())
+		}
+	}()
+	lo := tx.LargeObjects()
+	oid, err := lo.Create(context.Background(), 0)
+	if err != nil {
+		return err
+	}
+	f, err := lo.Open(context.Background(), oid, pgx.LargeObjectModeWrite)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = io.Copy(f, v.File)
+	if err != nil {
+		return err
+	}
+	err = tx.QueryRow(context.Background(), `
+		insert into videos (sid, title, description, file) values ($1, $2, $3, $4) RETURNING vid
+	`, v.Sid, v.Title, v.Description, oid).Scan(&v.Vid)
+	if err != nil {
+		return err
+	}
+	ok = true
+	return nil
+}
