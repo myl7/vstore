@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/gin-contrib/sessions"
 	"github.com/myl7/vstore/pkg/dao"
 	"github.com/myl7/vstore/pkg/utils"
 	"io/ioutil"
@@ -114,4 +115,38 @@ func GetGitHubName(token string) (string, error) {
 		return "", errors.New("no `login` field in the response")
 	}
 	return string(name), nil
+}
+
+func SetSessionUser(s *sessions.Session, user dao.User) error {
+	(*s).Set("vstore-uid", user.Uid)
+	(*s).Set("vstore-token", user.Token)
+	err := (*s).Save()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetSessionUser(s *sessions.Session) (dao.User, bool) {
+	uidVal := (*s).Get("vstore-uid")
+	if uidVal == nil {
+		return dao.User{}, false
+	}
+	uid := uidVal.(int)
+
+	tokenVal := (*s).Get("vstore-token")
+	if tokenVal == nil {
+		return dao.User{}, false
+	}
+	token := tokenVal.(string)
+
+	var user dao.User
+	err := user.Get(uid)
+	if err != nil {
+		return dao.User{}, false
+	}
+	if token != user.Token {
+		return dao.User{}, false
+	}
+	return user, true
 }

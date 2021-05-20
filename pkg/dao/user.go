@@ -14,12 +14,8 @@ func (u *User) Get(uid int) error {
 	`, uid).Scan(&u.Uid, &u.Token, &u.Name)
 }
 
-func (u User) Add() error {
-	_, err := GetConn().Exec(context.Background(), `
-		insert into users (token, name) values ($1, $2)
-	`, u.Token, u.Name)
-	if err != nil {
-		return err
-	}
-	return nil
+func (u *User) Add() error {
+	return GetConn().QueryRow(context.Background(), `
+		insert into users (token, name) values ($1, $2) returning uid
+	`, u.Token, u.Name).Scan(&u.Uid)
 }

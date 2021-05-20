@@ -18,6 +18,7 @@ func main() {
 
 	r := gin.Default()
 
+	pkg.MountMiddlewares(r)
 	pkg.Route(r)
 
 	err = r.Run()

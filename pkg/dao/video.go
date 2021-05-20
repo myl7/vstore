@@ -65,6 +65,7 @@ func (v VideoStream) Close() error {
 type VideoAdd struct {
 	Vid         int
 	Sid         int
+	Uid         int
 	Title       string
 	Description string
 	File        io.ReadCloser
@@ -96,8 +97,8 @@ func (v *VideoAdd) Add() error {
 		return err
 	}
 	err = tx.QueryRow(context.Background(), `
-		insert into videos (sid, title, description, file) values ($1, $2, $3, $4) RETURNING vid
-	`, v.Sid, v.Title, v.Description, oid).Scan(&v.Vid)
+		insert into videos (sid, uid, title, description, file) values ($1, $2, $3, $4, $5) returning vid
+	`, v.Sid, v.Uid, v.Title, v.Description, oid).Scan(&v.Vid)
 	if err != nil {
 		return err
 	}

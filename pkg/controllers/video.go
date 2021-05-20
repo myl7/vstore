@@ -1,15 +1,21 @@
 package controllers
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/myl7/vstore/pkg/dao"
 	"io"
 	"net/http"
 )
 
-func GetVideoMeta(vid int, c *gin.Context) {
+func GetVideoMeta(c *gin.Context) {
+	vid, err := ensureParamInt(c.Param("vid"), c)
+	if err != nil {
+		return
+	}
+
 	v := dao.VideoMeta{}
-	err := v.Get(vid)
+	err = v.Get(vid)
 	if err != nil {
 		c.String(http.StatusNotFound, "Getting video meta failed")
 	} else {
@@ -17,7 +23,12 @@ func GetVideoMeta(vid int, c *gin.Context) {
 	}
 }
 
-func GetVideoStream(vid int, c *gin.Context) {
+func GetVideoStream(c *gin.Context) {
+	vid, err := ensureParamInt(c.Param("vid"), c)
+	if err != nil {
+		return
+	}
+
 	v := dao.VideoStream{}
 	f, err := v.Get(vid)
 	if err != nil {
@@ -42,6 +53,13 @@ func ListSources(c *gin.Context) {
 }
 
 func AddVideo(c *gin.Context) {
+	s := sessions.Default(c)
+	user, ok := requireLogin(&s)
+	if !ok {
+		c.String(http.StatusForbidden, "Login required")
+		return
+	}
+
 	var body struct {
 		Sid         int    `form:"sid"`
 		Title       string `form:"title"`
@@ -65,6 +83,7 @@ func AddVideo(c *gin.Context) {
 	}
 	v := dao.VideoAdd{
 		Sid:         body.Sid,
+		Uid:         user.Uid,
 		Title:       body.Title,
 		Description: body.Description,
 		File:        f,
