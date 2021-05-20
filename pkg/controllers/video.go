@@ -95,3 +95,17 @@ func AddVideo(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"res": v.Vid})
 	}
 }
+
+func GetVideoComments(c *gin.Context) {
+	vid, err := ensureParamInt(c.Param("vid"), c)
+	if err != nil {
+		return
+	}
+
+	res, err := dao.ListCommentsByVideo(vid)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "")
+	} else {
+		c.JSON(http.StatusOK, gin.H{"res": res})
+	}
+}

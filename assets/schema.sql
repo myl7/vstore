@@ -15,3 +15,10 @@ create table videos (
   description varchar(510) not null,
   file oid not null
 );
+create table comments (
+  mid serial primary key,
+  vid int not null references videos (vid),
+  uid int not null references users (uid),
+  text varchar(510) not null,
+  time timestamp not null
+);
