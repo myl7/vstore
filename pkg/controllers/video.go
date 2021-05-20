@@ -148,3 +148,19 @@ func AddVideoComment(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"res": m.Mid})
 	}
 }
+
+func ListUserVideoMeta(c *gin.Context) {
+	s := sessions.Default(c)
+	user, ok := requireLogin(&s)
+	if !ok {
+		c.String(http.StatusForbidden, "Login required")
+		return
+	}
+
+	res, err := dao.ListVideoMetaByUid(user.Uid)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "")
+	} else {
+		c.JSON(http.StatusOK, gin.H{"res": res})
+	}
+}

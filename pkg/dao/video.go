@@ -105,3 +105,22 @@ func (v *VideoAdd) Add() error {
 	ok = true
 	return nil
 }
+
+func ListVideoMetaByUid(uid int) ([]VideoMeta, error) {
+	rows, err := GetConn().Query(context.Background(), `
+		select vid, s.name, title, description from videos join sources s on s.sid = videos.sid where uid = $1
+	`, uid)
+	if err != nil {
+		return nil, err
+	}
+	res := make([]VideoMeta, 0)
+	var v VideoMeta
+	for rows.Next() {
+		err := rows.Scan(&v.Vid, &v.Source, &v.Title, &v.Description)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, v)
+	}
+	return res, nil
+}
