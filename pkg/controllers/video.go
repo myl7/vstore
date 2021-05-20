@@ -6,6 +6,7 @@ import (
 	"github.com/myl7/vstore/pkg/dao"
 	"io"
 	"net/http"
+	"time"
 )
 
 func GetVideoMeta(c *gin.Context) {
@@ -107,5 +108,43 @@ func GetVideoComments(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "")
 	} else {
 		c.JSON(http.StatusOK, gin.H{"res": res})
+	}
+}
+
+func AddVideoComment(c *gin.Context) {
+	s := sessions.Default(c)
+	user, ok := requireLogin(&s)
+	if !ok {
+		c.String(http.StatusForbidden, "Login required")
+		return
+	}
+
+	vid, err := ensureParamInt(c.Param("vid"), c)
+	if err != nil {
+		return
+	}
+
+	errMsg := "Invalid data to create a comment"
+
+	var body struct {
+		Text string
+	}
+	err = c.ShouldBind(&body)
+	if err != nil {
+		c.String(http.StatusBadRequest, errMsg)
+		return
+	}
+
+	m := dao.CommentAdd{
+		Vid:  vid,
+		Uid:  user.Uid,
+		Text: body.Text,
+		Time: time.Now().UTC(),
+	}
+	err = m.Add()
+	if err != nil {
+		c.String(http.StatusBadRequest, errMsg)
+	} else {
+		c.JSON(http.StatusOK, gin.H{"res": m.Mid})
 	}
 }

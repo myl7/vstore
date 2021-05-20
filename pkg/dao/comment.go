@@ -31,3 +31,17 @@ func ListCommentsByVideo(vid int) ([]Comment, error) {
 	}
 	return res, nil
 }
+
+type CommentAdd struct {
+	Mid  int
+	Vid  int
+	Uid  int
+	Text string
+	Time time.Time
+}
+
+func (m *CommentAdd) Add() error {
+	return GetConn().QueryRow(context.Background(), `
+		insert into comments (vid, uid, text, time) values ($1, $2, $3, $4) returning mid
+	`, m.Vid, m.Uid, m.Text, m.Time).Scan(&m.Mid)
+}
