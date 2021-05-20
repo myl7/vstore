@@ -33,6 +33,7 @@ func Route(r *gin.Engine) {
 
 		controllers.GetVideoStream(vid, c)
 	})
+	r.GET("/api/sources", controllers.ListSources)
 	r.GET("/auth/start", controllers.AuthStart)
 	r.GET("/auth/cb", controllers.AuthCallback)
 }

@@ -31,3 +31,12 @@ func GetVideoStream(vid int, c *gin.Context) {
 		})
 	}
 }
+
+func ListSources(c *gin.Context) {
+	res, err := dao.ListSources()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "")
+	} else {
+		c.JSON(http.StatusOK, gin.H{"res": res})
+	}
+}
