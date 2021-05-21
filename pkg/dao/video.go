@@ -7,10 +7,10 @@ import (
 )
 
 type VideoMeta struct {
-	Vid         int
-	Source      string
-	Title       string
-	Description string
+	Vid         int    `json:"vid"`
+	Source      string `json:"source"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 func (v *VideoMeta) Get(vid int) error {

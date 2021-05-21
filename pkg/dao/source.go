@@ -3,8 +3,8 @@ package dao
 import "context"
 
 type Source struct {
-	Sid  int
-	Name string
+	Sid  int    `json:"sid"`
+	Name string `json:"name"`
 }
 
 func ListSources() ([]Source, error) {
