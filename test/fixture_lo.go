@@ -32,7 +32,7 @@ func main() {
 			log.Fatalln(err)
 		}
 		defer f.Close()
-		lf, err := os.Open("/tmp/vstore-test/video1.mpg")
+		lf, err := os.Open("/tmp/vstore-test/video1.mp4")
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -50,7 +50,7 @@ func main() {
 			log.Fatalln(err)
 		}
 		defer f.Close()
-		lf, err := os.Open("/tmp/vstore-test/video2.mpg")
+		lf, err := os.Open("/tmp/vstore-test/video2.mp4")
 		if err != nil {
 			log.Fatalln(err)
 		}
