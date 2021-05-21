@@ -14,8 +14,32 @@ func (u *User) Get(uid int) error {
 	`, uid).Scan(&u.Uid, &u.Token, &u.Name)
 }
 
-func (u *User) Add() error {
-	return GetConn().QueryRow(context.Background(), `
-		insert into users (token, name) values ($1, $2) returning uid
-	`, u.Token, u.Name).Scan(&u.Uid)
+func (u *User) AddOrUpdateToken() error {
+	tx, err := GetConn().Begin(context.Background())
+	if err != nil {
+		return err
+	}
+
+	ok := false
+	defer func() {
+		if ok {
+			_ = tx.Commit(context.Background())
+		} else {
+			_ = tx.Rollback(context.Background())
+		}
+	}()
+
+	err = tx.QueryRow(context.Background(), `
+		select uid from users where name = $1
+	`, u.Name).Scan(&u.Uid)
+	if err == nil {
+		_, err := tx.Exec(context.Background(), `
+			update users set token = $2 where uid = $1
+		`, u.Uid, u.Token)
+		return err
+	} else {
+		return tx.QueryRow(context.Background(), `
+			insert into users (token, name) values ($1, $2) returning uid
+		`, u.Token, u.Name).Scan(&u.Uid)
+	}
 }

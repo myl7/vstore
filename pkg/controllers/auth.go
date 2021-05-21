@@ -45,7 +45,7 @@ func AuthCallback(c *gin.Context) {
 	var user dao.User
 	user.Token = info.AccessToken
 	user.Name = name
-	err = user.Add()
+	err = user.AddOrUpdateToken()
 	if err != nil {
 		c.String(http.StatusUnauthorized, errMsg)
 		return
