@@ -118,8 +118,7 @@ func GetGitHubName(token string) (string, error) {
 }
 
 func SetSessionUser(s *sessions.Session, user dao.User) error {
-	(*s).Set("vstore-uid", user.Uid)
-	(*s).Set("vstore-token", user.Token)
+	(*s).Set("uid", user.Uid)
 	err := (*s).Save()
 	if err != nil {
 		return err
@@ -128,24 +127,15 @@ func SetSessionUser(s *sessions.Session, user dao.User) error {
 }
 
 func GetSessionUser(s *sessions.Session) (dao.User, bool) {
-	uidVal := (*s).Get("vstore-uid")
+	uidVal := (*s).Get("uid")
 	if uidVal == nil {
 		return dao.User{}, false
 	}
 	uid := uidVal.(int)
 
-	tokenVal := (*s).Get("vstore-token")
-	if tokenVal == nil {
-		return dao.User{}, false
-	}
-	token := tokenVal.(string)
-
 	var user dao.User
 	err := user.Get(uid)
 	if err != nil {
-		return dao.User{}, false
-	}
-	if token != user.Token {
 		return dao.User{}, false
 	}
 	return user, true
