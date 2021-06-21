@@ -93,7 +93,7 @@ func AddVideo(c *gin.Context) {
 	if err != nil {
 		c.String(http.StatusBadRequest, errMsg)
 	} else {
-		c.JSON(http.StatusOK, gin.H{"res": v.Vid})
+		c.JSON(http.StatusCreated, gin.H{"res": v.Vid})
 	}
 }
 
@@ -127,7 +127,7 @@ func AddVideoComment(c *gin.Context) {
 	errMsg := "Invalid data to create a comment"
 
 	var body struct {
-		Text string
+		Text string `json:"text"`
 	}
 	err = c.ShouldBind(&body)
 	if err != nil {
@@ -145,7 +145,7 @@ func AddVideoComment(c *gin.Context) {
 	if err != nil {
 		c.String(http.StatusBadRequest, errMsg)
 	} else {
-		c.JSON(http.StatusOK, gin.H{"res": m.Mid})
+		c.JSON(http.StatusCreated, gin.H{"res": m.Mid})
 	}
 }
 
