@@ -129,7 +129,7 @@ func AddVideoComment(c *gin.Context) {
 	var body struct {
 		Text string `json:"text"`
 	}
-	err = c.ShouldBind(&body)
+	err = c.ShouldBindJSON(&body)
 	if err != nil {
 		c.String(http.StatusBadRequest, errMsg)
 		return
