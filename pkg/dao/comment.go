@@ -6,16 +6,16 @@ import (
 )
 
 type Comment struct {
-	Mid      int
-	Vid      int
-	UserName string
-	Text     string
-	Time     time.Time
+	Mid      int       `json:"mid"`
+	Vid      int       `json:"vid"`
+	UserName string    `json:"user_name"`
+	Text     string    `json:"text"`
+	Time     time.Time `json:"time"`
 }
 
 func ListCommentsByVideo(vid int) ([]Comment, error) {
 	rows, err := GetConn().Query(context.Background(), `
-		select mid, vid, u.name, text, time from comments join users u on comments.uid = u.uid where vid = $1
+		select mid, vid, u.name as user_name, text, time from comments join users u on comments.uid = u.uid where vid = $1
 	`, vid)
 	if err != nil {
 		return nil, err
