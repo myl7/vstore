@@ -14,27 +14,33 @@ type VideoMeta struct {
 }
 
 func (v *VideoMeta) Get(vid int) error {
-	return GetConn().QueryRow(context.Background(), `
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	return conn.QueryRow(context.Background(), `
 		select vid, s.name, title, description from videos join sources s on s.sid = videos.sid where vid = $1
 	`, vid).Scan(&v.Vid, &v.Source, &v.Title, &v.Description)
 }
 
 func (v VideoMeta) Put() error {
-	_, err := GetConn().Exec(context.Background(), `
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	_, err := conn.Exec(context.Background(), `
 		update videos set title = $2, description = $3 where vid = $1
 	`, v.Vid, v.Title, v.Description)
 	return err
 }
 
 type VideoStream struct {
-	tx  pgx.Tx
-	oid uint32
+	tx   pgx.Tx
+	conn *pgx.Conn
+	oid  uint32
 }
 
 func (v *VideoStream) Get(vid int) (io.ReadSeekCloser, error) {
 	if v.tx == nil {
 		var err error
-		v.tx, err = GetConn().Begin(context.Background())
+		v.conn = GetConn()
+		v.tx, err = v.conn.Begin(context.Background())
 		if err != nil {
 			return nil, err
 		}
@@ -56,6 +62,7 @@ func (v *VideoStream) Get(vid int) (io.ReadSeekCloser, error) {
 }
 
 func (v VideoStream) Close() error {
+	defer v.conn.Close(context.Background())
 	if v.tx != nil {
 		return v.tx.Commit(context.Background())
 	}
@@ -73,7 +80,9 @@ type VideoAdd struct {
 
 func (v *VideoAdd) Add() error {
 	defer v.File.Close()
-	tx, err := GetConn().Begin(context.Background())
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	tx, err := conn.Begin(context.Background())
 	ok := false
 	defer func() {
 		if ok {
@@ -107,7 +116,9 @@ func (v *VideoAdd) Add() error {
 }
 
 func ListVideoMetaByUid(uid int) ([]VideoMeta, error) {
-	rows, err := GetConn().Query(context.Background(), `
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	rows, err := conn.Query(context.Background(), `
 		select vid, s.name, title, description from videos join sources s on s.sid = videos.sid where uid = $1
 	`, uid)
 	if err != nil {

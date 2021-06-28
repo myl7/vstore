@@ -8,7 +8,9 @@ type Source struct {
 }
 
 func ListSources() ([]Source, error) {
-	rows, err := GetConn().Query(context.Background(), `
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	rows, err := conn.Query(context.Background(), `
 		select sid, name from sources order by name
 	`)
 	if err != nil {

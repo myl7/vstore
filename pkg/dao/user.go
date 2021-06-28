@@ -9,13 +9,17 @@ type User struct {
 }
 
 func (u *User) Get(uid int) error {
-	return GetConn().QueryRow(context.Background(), `
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	return conn.QueryRow(context.Background(), `
 		select uid, token, name from users where uid = $1
 	`, uid).Scan(&u.Uid, &u.Token, &u.Name)
 }
 
 func (u *User) AddOrUpdateToken() error {
-	tx, err := GetConn().Begin(context.Background())
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	tx, err := conn.Begin(context.Background())
 	if err != nil {
 		return err
 	}

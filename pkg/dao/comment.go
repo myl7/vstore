@@ -14,7 +14,9 @@ type Comment struct {
 }
 
 func ListCommentsByVideo(vid int) ([]Comment, error) {
-	rows, err := GetConn().Query(context.Background(), `
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	rows, err := conn.Query(context.Background(), `
 		select mid, vid, u.name as user_name, text, time from comments join users u on comments.uid = u.uid where vid = $1
 	`, vid)
 	if err != nil {
@@ -41,7 +43,9 @@ type CommentAdd struct {
 }
 
 func (m *CommentAdd) Add() error {
-	return GetConn().QueryRow(context.Background(), `
+	conn := GetConn()
+	defer conn.Close(context.Background())
+	return conn.QueryRow(context.Background(), `
 		insert into comments (vid, uid, text, time) values ($1, $2, $3, $4) returning mid
 	`, m.Vid, m.Uid, m.Text, m.Time).Scan(&m.Mid)
 }
